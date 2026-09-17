@@ -22,7 +22,27 @@ public static class SetsAndMaps
     public static string[] FindPairs(string[] words)
     {
         // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        var seen = new HashSet<(char, char)>(words.Length);
+    var result = new List<string>();
+
+    foreach (var word in words)
+    {
+        if (word[0] == word[1])
+        {
+            continue;
+        }
+
+        if (seen.Contains((word[1], word[0])))
+        {
+            result.Add($"{word} & {word[1]}{word[0]}");
+        }
+        else
+        {
+            seen.Add((word[0], word[1]));
+        }
+    }
+
+    return [.. result];
     }
 
     /// <summary>
@@ -43,6 +63,9 @@ public static class SetsAndMaps
         {
             var fields = line.Split(",");
             // TODO Problem 2 - ADD YOUR CODE HERE
+            var degree = fields[3].Trim();
+
+            degrees[degree] = degrees.GetValueOrDefault(degree, 0) + 1;
         }
 
         return degrees;
@@ -67,7 +90,33 @@ public static class SetsAndMaps
     public static bool IsAnagram(string word1, string word2)
     {
         // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        var counts = new Dictionary<char, int>();
+
+        foreach (var ch in word1)
+        {
+            if (ch == ' ')
+            {
+                continue;
+            }
+            var c = char.ToLower(ch);
+            counts[c] = counts.GetValueOrDefault(c, 0) + 1;
+        }
+
+        foreach (var ch in word2)
+        {
+            if (ch == ' ')
+            {
+                continue;
+            }
+            var c = char.ToLower(ch);
+            if (!counts.ContainsKey(c))
+            {
+                return false;
+            }
+            counts[c]--;
+        }
+
+        return counts.Values.All(v => v == 0);
     }
 
     /// <summary>
@@ -101,6 +150,16 @@ public static class SetsAndMaps
         // on those classes so that the call to Deserialize above works properly.
         // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
         // 3. Return an array of these string descriptions.
-        return [];
+        var results = new List<string>();
+        if (featureCollection is not null)
+        {
+            foreach (var feature in featureCollection.Features)
+            {
+                var magText = feature.Properties.Mag?.ToString() ?? "Unknown";
+                results.Add($"{feature.Properties.Place} - Mag {magText}");
+            }
+        }
+
+        return [.. results];
     }
 }
