@@ -15,7 +15,14 @@ public static class Recursion
     public static int SumSquaresRecursive(int n)
     {
         // TODO Start Problem 1
-        return 0;
+        // Base case: nothing left to add
+        if (n <= 0)
+        {
+            return 0;
+        }
+
+        // Recursive case: this term's square plus the sum of everything smaller
+        return (n * n) + SumSquaresRecursive(n - 1);
     }
 
     /// <summary>
@@ -40,6 +47,19 @@ public static class Recursion
     public static void PermutationsChoose(List<string> results, string letters, int size, string word = "")
     {
         // TODO Start Problem 2
+        // Base case: the word has reached the target length
+        if (word.Length == size)
+        {
+            results.Add(word);
+            return;
+        }
+
+        // Recursive case: try each remaining letter as the next character
+        for (int i = 0; i < letters.Length; i++)
+        {
+            var remainingLetters = letters.Remove(i, 1);
+            PermutationsChoose(results, remainingLetters, size, word + letters[i]);
+        }
     }
 
     /// <summary>
@@ -97,9 +117,20 @@ public static class Recursion
             return 4;
 
         // TODO Start Problem 3
+        remember ??= [];
 
-        // Solve using recursion
-        decimal ways = CountWaysToClimb(s - 1) + CountWaysToClimb(s - 2) + CountWaysToClimb(s - 3);
+        // If we've already solved this subproblem, reuse the stored result
+        if (remember.TryGetValue(s, out var cachedValue))
+        {
+            return cachedValue;
+        }
+
+        // Solve using recursion, passing 'remember' along so the cache is shared
+        decimal ways = CountWaysToClimb(s - 1, remember) + CountWaysToClimb(s - 2, remember) + CountWaysToClimb(s - 3, remember);
+
+        // Save this result before returning, so future calls (and sibling branches) can reuse it
+        remember[s] = ways;
+
         return ways;
     }
 
@@ -119,6 +150,21 @@ public static class Recursion
     public static void WildcardBinary(string pattern, List<string> results)
     {
         // TODO Start Problem 4
+        int index = pattern.IndexOf('*');
+
+        // Base case: no wildcard left, this is a complete binary string
+        if (index == -1)
+        {
+            results.Add(pattern);
+            return;
+        }
+
+        // Recursive case: try both possible digits at this wildcard position
+        foreach (var digit in new[] { '0', '1' })
+        {
+            var newPattern = pattern[..index] + digit + pattern[(index + 1)..];
+            WildcardBinary(newPattern, results);
+        }
     }
 
     /// <summary>
@@ -129,7 +175,8 @@ public static class Recursion
     {
         // If this is the first time running the function, then we need
         // to initialize the currPath list.
-        if (currPath == null) {
+        if (currPath == null)
+        {
             currPath = new List<ValueTuple<int, int>>();
         }
         
@@ -137,6 +184,36 @@ public static class Recursion
 
         // TODO Start Problem 5
         // ADD CODE HERE
+        currPath.Add((x, y)); // Mark this square as part of the current path
+
+        if (maze.IsEnd(x, y))
+        {
+            results.Add(currPath.AsString()); // Found a complete solution
+        }
+        else
+        {
+            // Try every direction; IsValidMove already checks bounds, walls, and revisits
+            if (maze.IsValidMove(currPath, x - 1, y))
+            {
+                SolveMaze(results, maze, x - 1, y, currPath);
+            }
+            if (maze.IsValidMove(currPath, x + 1, y))
+            {
+                SolveMaze(results, maze, x + 1, y, currPath);
+            }
+            if (maze.IsValidMove(currPath, x, y - 1))
+            {
+                SolveMaze(results, maze, x, y - 1, currPath);
+            }
+            if (maze.IsValidMove(currPath, x, y + 1))
+            {
+                SolveMaze(results, maze, x, y + 1, currPath);
+            }
+        }
+
+        // Backtrack: this square is no longer part of the path being explored,
+        // so free it up for other branches to try.
+        currPath.RemoveAt(currPath.Count - 1);
 
         // results.Add(currPath.AsString()); // Use this to add your path to the results array keeping track of complete maze solutions when you find the solution.
     }
